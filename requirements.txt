@@ -4,5 +4,10 @@ numpy
 scikit-learn
 joblib
 openpyxl
+langchain
+langchain-groq
+groq
+
+
 
 
