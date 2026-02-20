@@ -65,7 +65,7 @@ def go(page):
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
-# ================= BACKGROUND (DESKTOP + MOBILE) =================
+# ================= BACKGROUND (DESKTOP + MOBILE FIX) =================
 def set_background(image_file):
     with open(image_file, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
@@ -79,17 +79,17 @@ def set_background(image_file):
         background-size: cover;
     }}
 
+    /* Mobile fix */
     @media only screen and (max-width: 768px) {{
         html, body, [data-testid="stApp"] {{
+            background-attachment: scroll;
             background-size: contain;
             background-position: center top;
-            background-attachment: scroll;
         }}
 
-        h1 {{ font-size: 34px !important; font-weight: 800; text-align:center; }}
-        h2 {{ font-size: 26px !important; font-weight: 700; text-align:center; }}
-        h3 {{ font-size: 22px !important; font-weight: 600; text-align:center; }}
-        h4 {{ font-size: 20px !important; font-weight: 600; }}
+        h1 {{ font-size: 30px !important; text-align: center; }}
+        h2, h3 {{ font-size: 22px !important; text-align: center; }}
+        p, label, span {{ font-size: 16px !important; }}
 
         .stButton>button {{
             width: 100%;
@@ -112,24 +112,13 @@ def set_background(image_file):
 
 set_background("background.png")
 
-# ================= WELCOME (FIXED PAGE) =================
+# ================= WELCOME =================
 if st.session_state.page == "welcome":
 
     st.markdown("""
-    <style>
-    .welcome-container {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        overflow: hidden;
-    }
-    </style>
-
-    <div class="welcome-container">
-        <h1>Welcome to ALZ CARE</h1>
+    <div style="height:80vh;display:flex;flex-direction:column;
+                justify-content:center;align-items:center;text-align:center;">
+        <h1 style="font-weight:800;">Welcome to ALZ CARE</h1>
         <h3>AI-Based Alzheimer’s Risk Prediction & Support</h3>
     </div>
     """, unsafe_allow_html=True)
@@ -137,10 +126,10 @@ if st.session_state.page == "welcome":
     if st.button("➡ Enter ALZ CARE"):
         go("login")
 
-# ================= LOGIN =================
+# ================= LOGIN (MOBILE STACKED) =================
 elif st.session_state.page == "login":
 
-    st.markdown("<h1>🔐 ALZ CARE Login</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>🔐 ALZ CARE Login</h1>", unsafe_allow_html=True)
 
     st.subheader("👤 User Login / Signup")
     username = st.text_input("Username")
@@ -149,7 +138,10 @@ elif st.session_state.page == "login":
     if st.button("Login / Create Account"):
         if username and password:
             hashed = hash_password(password)
-            user = c.execute("SELECT password FROM users WHERE username=?", (username,)).fetchone()
+            user = c.execute(
+                "SELECT password FROM users WHERE username=?",
+                (username,)
+            ).fetchone()
 
             if user is None:
                 c.execute("INSERT INTO users VALUES (?,?)", (username, hashed))
@@ -180,7 +172,7 @@ elif st.session_state.page == "login":
 # ================= HOME =================
 elif st.session_state.page == "home":
 
-    st.markdown("<h1>ALZ CARE HOME</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>ALZ CARE HOME</h1>", unsafe_allow_html=True)
     st.success(f"Logged in as: {st.session_state.username}")
 
     if st.button("🧠 About ALZ CARE"): go("about")
@@ -189,14 +181,15 @@ elif st.session_state.page == "home":
     if st.button("📜 History"): go("history")
 
     if st.session_state.role == "admin":
-        if st.button("🛠 Admin Dashboard"): go("admin")
+        if st.button("🛠 Admin Dashboard"):
+            go("admin")
 
     if st.button("🚪 Logout"):
         st.session_state.username = None
         st.session_state.role = None
         go("welcome")
 
-# ================= ABOUT (FULL – UNCHANGED) =================
+# ================= ABOUT =================
 elif st.session_state.page == "about":
 
     st.markdown("<h1>🧠 About ALZ CARE</h1>", unsafe_allow_html=True)
@@ -249,20 +242,75 @@ elif st.session_state.page == "predict":
     st.markdown("<h1>🔍 Alzheimer’s Risk Prediction</h1>", unsafe_allow_html=True)
 
     age = st.slider("Age", 20, 90, 70)
-    bmi = st.slider("BMI", 15.0, 40.0, 24.0)
-    mmse = st.slider("MMSE", 0, 30, 25)
+    gender = 1 if st.selectbox("Gender", ["Female","Male"])=="Male" else 0
+    ethnicity = st.selectbox("Ethnicity Group", [0,1,2,3])
+    education = ["No Formal Education","Primary","Secondary","Higher Education"].index(
+        st.selectbox("Education Level",
+        ["No Formal Education","Primary","Secondary","Higher Education"])
+    )
+
+    bmi = st.slider("BMI",15.0,40.0,24.0)
+    smoking = 1 if st.selectbox("Smoking",["No","Yes"])=="Yes" else 0
+    alcohol = 1 if st.selectbox("Alcohol",["No","Yes"])=="Yes" else 0
+    physical = 1 if st.selectbox("Physical Activity",["No","Yes"])=="Yes" else 0
+    diet = ["Poor","Average","Good"].index(st.selectbox("Diet Quality",["Poor","Average","Good"]))
+    sleep = ["Poor","Average","Good"].index(st.selectbox("Sleep Quality",["Poor","Average","Good"]))
+
+    family = 1 if st.selectbox("Family History of Alzheimer’s",["No","Yes"])=="Yes" else 0
+    cardio = 1 if st.selectbox("Cardiovascular Disease",["No","Yes"])=="Yes" else 0
+    diabetes = 1 if st.selectbox("Diabetes",["No","Yes"])=="Yes" else 0
+    depression = 1 if st.selectbox("Depression",["No","Yes"])=="Yes" else 0
+    head = 1 if st.selectbox("Head Injury",["No","Yes"])=="Yes" else 0
+    hyper = 1 if st.selectbox("Hypertension",["No","Yes"])=="Yes" else 0
+
+    sys = st.slider("Systolic BP",90,180,120)
+    dia = st.slider("Diastolic BP",60,120,80)
+    chol = st.slider("Total Cholesterol",120,300,180)
+    ldl = st.slider("LDL",50,200,100)
+    hdl = st.slider("HDL",30,100,50)
+    tg = st.slider("Triglycerides",50,400,150)
+
+    mmse = st.slider("MMSE",0,30,25)
+    func = st.slider("Functional Assessment",0,10,7)
+    adl = st.slider("ADL",0,10,8)
+
+    mem = 1 if st.selectbox("Memory Complaints",["No","Yes"])=="Yes" else 0
+    beh = 1 if st.selectbox("Behavioral Problems",["No","Yes"])=="Yes" else 0
+    conf = 1 if st.selectbox("Confusion",["No","Yes"])=="Yes" else 0
+    dis = 1 if st.selectbox("Disorientation",["No","Yes"])=="Yes" else 0
+    pers = 1 if st.selectbox("Personality Changes",["No","Yes"])=="Yes" else 0
+    task = 1 if st.selectbox("Difficulty Completing Tasks",["No","Yes"])=="Yes" else 0
+    forg = 1 if st.selectbox("Forgetfulness",["No","Yes"])=="Yes" else 0
 
     if st.button("🔍 Predict Alzheimer’s Risk"):
-        if age < 60:
-            result_text = "🟢 Low Risk (Screening Only)"
+
+        if age < 35:
+            result_text = "🟢 Low Risk — Maintain a healthy lifestyle."
             st.success(result_text)
+
+        elif 35 <= age < 60:
+            if any([bmi>=30, sys>=140, dia>=90, mmse<=20, adl<=3]):
+                result_text = (
+                    "🟡 Possible Increased Risk in the Future (Screening Result)\n\n"
+                    "⚠ This is for awareness only and not a diagnosis."
+                )
+                st.warning(result_text)
+            else:
+                result_text = "🟢 Low Risk — Continue healthy habits."
+                st.success(result_text)
+
         else:
-            result = model.predict(pd.DataFrame([[age, bmi, mmse]]))[0]
+            data = pd.DataFrame([[age,gender,ethnicity,education,bmi,smoking,alcohol,physical,
+                                  diet,sleep,family,cardio,diabetes,depression,head,hyper,
+                                  sys,dia,chol,ldl,hdl,tg,mmse,func,adl,
+                                  mem,beh,conf,dis,pers,task,forg]])
+            result = model.predict(data)[0]
+
             if result == 1:
-                result_text = "🔴 High Risk Detected (Consult Doctor)"
+                result_text = "🔴 High Risk Detected\n\n⚠ Not a diagnosis."
                 st.error(result_text)
             else:
-                result_text = "🟢 Low Risk Detected"
+                result_text = "🟢 Low Risk Detected\n\nRegular check-ups advised."
                 st.success(result_text)
 
         c.execute("INSERT INTO predictions VALUES (?,?,?)",
@@ -277,7 +325,7 @@ elif st.session_state.page == "chat":
     st.markdown("<h1>💬 ALZ CARE Smart Assistant</h1>", unsafe_allow_html=True)
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
-        api_key="YOUR_GROQ_API_KEY",
+        api_key="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",
         temperature=0.4
     )
 
@@ -320,6 +368,7 @@ elif st.session_state.page == "admin":
     st.markdown("<h1>🛠 Admin Dashboard</h1>", unsafe_allow_html=True)
     st.metric("Total Users", c.execute("SELECT COUNT(*) FROM users").fetchone()[0])
     st.button("⬅ Back to Home", on_click=go, args=("home",))
+
 
 
 
