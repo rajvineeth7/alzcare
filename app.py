@@ -312,11 +312,11 @@ elif st.session_state.page == "predict":
 # ================= CHAT =================
 elif st.session_state.page == "chat":
 
-    st.markdown("<h1>💬 ALZ CARE Smart Assistant</h1>", unsafe_allow_html=True)
+    st.markdown("<h1> ALZ CARE Smart Assistant</h1>", unsafe_allow_html=True)
 
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
-        api_key="YOUR_GROQ_API_KEY",
+        api_key="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",
         temperature=0.4
     )
 
@@ -359,6 +359,7 @@ elif st.session_state.page == "admin":
     st.markdown("<h1>🛠 Admin Dashboard</h1>", unsafe_allow_html=True)
     st.metric("Total Users", c.execute("SELECT COUNT(*) FROM users").fetchone()[0])
     st.button("⬅ Back to Home", on_click=go, args=("home",))
+
 
 
 
