@@ -65,7 +65,7 @@ def go(page):
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
-# ================= BACKGROUND (DESKTOP + MOBILE FIX) =================
+# ================= BACKGROUND + HEADER FIX =================
 def set_background(image_file):
     with open(image_file, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
@@ -79,33 +79,26 @@ def set_background(image_file):
         background-size: cover;
     }}
 
-    /* Mobile fix */
-    @media only screen and (max-width: 768px) {{
-        html, body, [data-testid="stApp"] {{
-            background-attachment: scroll;
-            background-size: contain;
-            background-position: center top;
-        }}
-
-        h1 {{ font-size: 30px !important; text-align: center; }}
-        h2, h3 {{ font-size: 22px !important; text-align: center; }}
-        p, label, span {{ font-size: 16px !important; }}
-
-        .stButton>button {{
-            width: 100%;
-            font-size: 18px;
-            padding: 12px;
-            border-radius: 10px;
-        }}
-
-        .block-container {{
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }}
-    }}
-
     h1,h2,h3,h4,h5,p,label,span {{
         color:black !important;
+    }}
+
+    /* FIX SMALL HEADERS */
+    .alz-title {{
+        font-size: 52px !important;
+        font-weight: 900 !important;
+        text-align: center;
+    }}
+
+    .alz-subtitle {{
+        font-size: 28px !important;
+        font-weight: 600 !important;
+        text-align: center;
+    }}
+
+    @media (max-width: 768px) {{
+        .alz-title {{ font-size: 36px !important; }}
+        .alz-subtitle {{ font-size: 22px !important; }}
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -118,15 +111,15 @@ if st.session_state.page == "welcome":
     st.markdown("""
     <div style="height:80vh;display:flex;flex-direction:column;
                 justify-content:center;align-items:center;text-align:center;">
-        <h1 style="font-weight:800;">Welcome to ALZ CARE</h1>
-        <h3>AI-Based Alzheimer’s Risk Prediction & Support</h3>
+        <div class="alz-title">Welcome to ALZ CARE</div>
+        <div class="alz-subtitle">AI-Based Alzheimer’s Risk Prediction & Support</div>
     </div>
     """, unsafe_allow_html=True)
 
     if st.button("➡ Enter ALZ CARE"):
         go("login")
 
-# ================= LOGIN (MOBILE STACKED) =================
+# ================= LOGIN =================
 elif st.session_state.page == "login":
 
     st.markdown("<h1 style='text-align:center;'>🔐 ALZ CARE Login</h1>", unsafe_allow_html=True)
@@ -172,7 +165,7 @@ elif st.session_state.page == "login":
 # ================= HOME =================
 elif st.session_state.page == "home":
 
-    st.markdown("<h1 style='text-align:center;'>ALZ CARE HOME</h1>", unsafe_allow_html=True)
+    st.markdown("<div class='alz-title'>ALZ CARE HOME</div>", unsafe_allow_html=True)
     st.success(f"Logged in as: {st.session_state.username}")
 
     if st.button("🧠 About ALZ CARE"): go("about")
@@ -290,10 +283,7 @@ elif st.session_state.page == "predict":
 
         elif 35 <= age < 60:
             if any([bmi>=30, sys>=140, dia>=90, mmse<=20, adl<=3]):
-                result_text = (
-                    "🟡 Possible Increased Risk in the Future (Screening Result)\n\n"
-                    "⚠ This is for awareness only and not a diagnosis."
-                )
+                result_text = "🟡 Possible Increased Risk (Screening Result)"
                 st.warning(result_text)
             else:
                 result_text = "🟢 Low Risk — Continue healthy habits."
@@ -307,10 +297,10 @@ elif st.session_state.page == "predict":
             result = model.predict(data)[0]
 
             if result == 1:
-                result_text = "🔴 High Risk Detected\n\n⚠ Not a diagnosis."
+                result_text = "🔴 High Risk Detected (Not a diagnosis)"
                 st.error(result_text)
             else:
-                result_text = "🟢 Low Risk Detected\n\nRegular check-ups advised."
+                result_text = "🟢 Low Risk Detected"
                 st.success(result_text)
 
         c.execute("INSERT INTO predictions VALUES (?,?,?)",
@@ -323,9 +313,10 @@ elif st.session_state.page == "predict":
 elif st.session_state.page == "chat":
 
     st.markdown("<h1>💬 ALZ CARE Smart Assistant</h1>", unsafe_allow_html=True)
+
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
-        api_key="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",
+        api_key="YOUR_GROQ_API_KEY",
         temperature=0.4
     )
 
