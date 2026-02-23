@@ -316,7 +316,7 @@ elif st.session_state.page == "chat":
 
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
-        api_key="st.secrets["GROQ_API_KEY"]",
+        api_key=st.secrets["GROQ_API_KEY"],
         temperature=0.4
     )
 
@@ -359,6 +359,7 @@ elif st.session_state.page == "admin":
     st.markdown("<h1>🛠 Admin Dashboard</h1>", unsafe_allow_html=True)
     st.metric("Total Users", c.execute("SELECT COUNT(*) FROM users").fetchone()[0])
     st.button("⬅ Back to Home", on_click=go, args=("home",))
+
 
 
 
