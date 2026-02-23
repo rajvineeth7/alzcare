@@ -4,7 +4,6 @@ import joblib
 import base64
 import sqlite3
 import hashlib
-import os
 from datetime import datetime
 from langchain_groq import ChatGroq
 
@@ -84,6 +83,7 @@ def set_background(image_file):
         color:black !important;
     }}
 
+    /* FIX SMALL HEADERS */
     .alz-title {{
         font-size: 52px !important;
         font-weight: 900 !important;
@@ -300,7 +300,7 @@ elif st.session_state.page == "predict":
                 result_text = "🔴 High Risk Detected (Not a diagnosis)"
                 st.error(result_text)
             else:
-                result_text = "🟢 Low Risk Detected"
+                result_text = "🟢 Low Risk Detected (Be Cautious)"
                 st.success(result_text)
 
         c.execute("INSERT INTO predictions VALUES (?,?,?)",
@@ -315,8 +315,8 @@ elif st.session_state.page == "chat":
     st.markdown("<h1> ALZ CARE Smart Assistant</h1>", unsafe_allow_html=True)
 
     llm = ChatGroq(
-        model="llama3-8b-8192",
-        api_key=os.getenv("GROQ_API_KEY"),
+        model="llama-3.1-8b-instant",
+        api_key="st.secrets["GROQ_API_KEY"]",
         temperature=0.4
     )
 
@@ -359,6 +359,7 @@ elif st.session_state.page == "admin":
     st.markdown("<h1>🛠 Admin Dashboard</h1>", unsafe_allow_html=True)
     st.metric("Total Users", c.execute("SELECT COUNT(*) FROM users").fetchone()[0])
     st.button("⬅ Back to Home", on_click=go, args=("home",))
+
 
 
 
